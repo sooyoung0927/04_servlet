@@ -44,8 +44,41 @@ public class SessionServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("text/html; charset=UTF-8");
 
+        // 로그인 버튼을 눌렀을 때
+        // ID,PWD 값을 request 객체에서 꺼내담기
         String userid = req.getParameter("user_id");
         String userpwd = req.getParameter("user_pwd");
 
+        if(userid != null && !userpwd.isEmpty()){
+            // 사용자의 아이디와 비밀번호를 저장하기 위한 Session 객체
+            HttpSession session = req.getSession(true);
+            // 동일한 사용자인지 확인하기 위한 변수 생성
+            String existUser = (String)session.getAttribute("loggedInUser");
+            /*
+            * toString()은 널포인트익셉션 에러가 뜸 -> .은 내부 값 참조를 해야하는데 로그인 전 시점에서는 참조할 대상값이 없어서 널에러 뜸
+            * cast 연산자 (String)으로 형변환 해줘야함 -> 참조를 하지 않아서 에러가 나지 않음
+            * */
+
+            if(existUser == null || existUser.equals(userid)){
+                session.setAttribute("loggedInUser",userid);
+
+                if(userpwd != null && !userpwd.isEmpty()){
+                    session.setAttribute("pwd",userpwd);
+                }
+
+                session.setMaxInactiveInterval(30); // session의 유효 기간 설정 30초
+
+            }else{
+                session.setAttribute("loggedInUser",userid);
+
+                if(userpwd != null && !userpwd.isEmpty()){
+                    session.setAttribute("pwd",userpwd);
+                }
+
+                session.setMaxInactiveInterval(30);
+            }
+        }
+
+        doGet(req, resp);
     }
 }
